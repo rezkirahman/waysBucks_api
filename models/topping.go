@@ -24,6 +24,8 @@ type ToppingOrderResponse struct {
 	ID     int    `json:"id"`
 	Name   string `json:"name"`
 	Price  int    `json:"price"`
+	UserID int           `json:"-"`
+	User   UsersResponse `json:"-"`
 }
 
 func (ToppingResponse) TableName() string {
