@@ -76,7 +76,6 @@ func (h *handlerUser) CreateUser(w http.ResponseWriter, r *http.Request) {
 	user := models.User{
 		Name:     request.Name,
 		Email:    request.Email,
-		Role:     request.Role,
 		Password: request.Password,
 	}
 
@@ -124,10 +123,6 @@ func (h *handlerUser) UpdateUser(w http.ResponseWriter, r *http.Request) {
 		user.Password = request.Password
 	}
 
-	if request.Role != "" {
-		user.Role = request.Role
-	}
-
 	data, err := h.UserRepository.UpdateUser(user)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -171,7 +166,6 @@ func convertResponse(u models.User) usersdto.UserResponse {
 		ID:       u.ID,
 		Name:     u.Name,
 		Email:    u.Email,
-		Role:     u.Role,
 		Password: u.Password,
 	}
 }

@@ -6,16 +6,16 @@ import (
 	"os"
 	"strconv"
 	dto "waysbucks/dto/result"
-	toppingsdto "waysbucks/dto/topping"
+	toppingdto "waysbucks/dto/topping"
 	"waysbucks/models"
 	"waysbucks/repositories"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt/v4"
+	//"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
 )
 
-var path_file_t = os.Getenv("PATH_FILE")
+
 
 type handlerTopping struct {
 	ToppingRepository repositories.ToppingRepository
@@ -36,7 +36,7 @@ func (h *handlerTopping) FindToppings(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for i, p := range toppings {
-		toppings[i].Image = path_file_t + p.Image
+		toppings[i].Image = os.Getenv("PATH_FILE") + p.Image
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -69,8 +69,8 @@ func (h *handlerTopping) CreateTopping(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// get data token
-	userInfo := r.Context().Value("userInfo").(jwt.MapClaims)
-	userId := int(userInfo["id"].(float64))
+	//userInfo := r.Context().Value("userInfo").(jwt.MapClaims)
+	//userId := int(userInfo["id"].(float64))
 
 	// Get dataFile from midleware and store to filename variable here ...
 	dataContex := r.Context().Value("dataFile") // add this code
@@ -78,7 +78,7 @@ func (h *handlerTopping) CreateTopping(w http.ResponseWriter, r *http.Request) {
 
 	price, _ := strconv.Atoi(r.FormValue("price"))
 	qty, _ := strconv.Atoi(r.FormValue("qty"))
-	request := toppingsdto.CreateToppingRequest{
+	request := toppingdto.CreateToppingRequest{
 		Name:  r.FormValue("name"),
 		Price: price,
 		Qty:   qty,
@@ -94,11 +94,11 @@ func (h *handlerTopping) CreateTopping(w http.ResponseWriter, r *http.Request) {
 	}
 
 	topping := models.Topping{
-		Name:   request.Name,
-		Price:  request.Price,
-		Image:  filename,
-		Qty:    request.Qty,
-		UserID: userId,
+		Name:  request.Name,
+		Price: request.Price,
+		Image: filename,
+		Qty:   request.Qty,
+		//UserID: userId,
 	}
 
 	topping, err = h.ToppingRepository.CreateTopping(topping)
@@ -119,7 +119,7 @@ func (h *handlerTopping) CreateTopping(w http.ResponseWriter, r *http.Request) {
 func (h *handlerTopping) UpdateTopping(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	request := new(toppingsdto.UpdateToppingRequest)
+	request := new(toppingdto.UpdateToppingRequest)
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
@@ -194,8 +194,8 @@ func (h *handlerTopping) DeleteTopping(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func convertResponseTopping(u models.Topping) models.ToppingResponse {
-	return models.ToppingResponse{
+func convertResponseTopping(u models.Topping) toppingdto.ToppingResponse {
+	return toppingdto.ToppingResponse{
 		ID:    u.ID,
 		Name:  u.Name,
 		Price: u.Price,

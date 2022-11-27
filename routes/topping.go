@@ -15,7 +15,7 @@ func ToppingRoutes(r *mux.Router) {
 
 	r.HandleFunc("/toppings", h.FindToppings).Methods("GET")
 	r.HandleFunc("/topping/{id}", h.GetTopping).Methods("GET")
-	r.HandleFunc("/topping", middleware.Auth(h.CreateTopping)).Methods("POST")
+	r.HandleFunc("/topping",middleware.UploadFile(h.CreateTopping)).Methods("POST")
 	r.HandleFunc("/topping/{id}", h.UpdateTopping).Methods("PATCH")
 	r.HandleFunc("/topping/{id}", h.DeleteTopping).Methods("DELETE")
 }

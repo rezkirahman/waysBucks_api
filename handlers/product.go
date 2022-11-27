@@ -5,17 +5,16 @@ import (
 	"net/http"
 	"os"
 	"strconv"
-	productsdto "waysbucks/dto/product"
+	productdto "waysbucks/dto/product"
 	dto "waysbucks/dto/result"
 	"waysbucks/models"
 	"waysbucks/repositories"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/golang-jwt/jwt/v4"
+	//"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
 )
 
-var path_file = os.Getenv("PATH_FILE")
 
 type handlerProduct struct {
 	ProductRepository repositories.ProductRepository
@@ -37,7 +36,7 @@ func (h *handlerProduct) FindProducts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	for i, p := range products {
-		products[i].Image = path_file + p.Image
+		products[i].Image = os.Getenv("PATH_FILE") + p.Image
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -70,8 +69,8 @@ func (h *handlerProduct) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// get data token
-	userInfo := r.Context().Value("userInfo").(jwt.MapClaims)
-	userId := int(userInfo["id"].(float64))
+	//userInfo := r.Context().Value("userInfo").(jwt.MapClaims)
+	//userId := int(userInfo["id"].(float64))
 
 	// Get dataFile from midleware and store to filename variable here ...
 	dataContex := r.Context().Value("dataFile") // add this code
@@ -79,7 +78,7 @@ func (h *handlerProduct) CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	price, _ := strconv.Atoi(r.FormValue("price"))
 	qty, _ := strconv.Atoi(r.FormValue("qty"))
-	request := productsdto.CreateProductRequest{
+	request := productdto.CreateProductRequest{
 		Name:  r.FormValue("name"),
 		Price: price,
 		Qty:   qty,
@@ -99,7 +98,7 @@ func (h *handlerProduct) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		Price:  request.Price,
 		Image:  filename,
 		Qty:    request.Qty,
-		UserID: userId,
+		//UserID: userId,
 	}
 
 	product, err = h.ProductRepository.CreateProduct(product)
@@ -120,7 +119,7 @@ func (h *handlerProduct) CreateProduct(w http.ResponseWriter, r *http.Request) {
 func (h *handlerProduct) UpdateProduct(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	request := new(productsdto.UpdateProductRequest)
+	request := new(productdto.UpdateProductRequest)
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
@@ -195,8 +194,8 @@ func (h *handlerProduct) DeleteProduct(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func convertResponseProduct(u models.Product) models.ProductResponse {
-	return models.ProductResponse{
+func convertResponseProduct(u models.Product) productdto.ProductResponse {
+	return productdto.ProductResponse{
 		ID:    u.ID,
 		Name:  u.Name,
 		Price: u.Price,

@@ -13,3 +13,11 @@ type UpdateToppingRequest struct {
 	Image string `json:"image" form:"image"`
 	Qty   int    `json:"qty" form:"qty"`
 }
+
+type ToppingResponse struct {
+	ID    int    `json:"id"`
+	Name string `json:"title" form:"title"`
+	Price int    `json:"price" form:"price"`
+	Image string `json:"image" form:"image"`
+	Qty   int    `json:"qty" form:"qty"`
+}
