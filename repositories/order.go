@@ -35,13 +35,13 @@ func (r *repository) GetOrder(ID int) (models.Order, error) {
 }
 
 func (r *repository) CreateOrder(order models.Order) (models.Order, error) {
-	err := r.db.Create(&order).Error
+	err := r.db.Preload("User").Preload("Product").Preload("Topping").Create(&order).Error
 
 	return order, err
 }
 
 func (r *repository) UpdateOrder(order models.Order) (models.Order, error) {
-	err := r.db.Save(&order).Error
+	err := r.db.Preload("User").Preload("Product").Preload("Topping").Save(&order).Error
 
 	return order, err
 }

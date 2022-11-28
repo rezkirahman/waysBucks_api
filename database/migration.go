@@ -12,7 +12,7 @@ func RunMigration() {
 		&models.Product{},
 		&models.Topping{},
 		&models.Order{},
-		&models.Transaction{},
+		//&models.Transaction{},
 	)
 
 	if err != nil {

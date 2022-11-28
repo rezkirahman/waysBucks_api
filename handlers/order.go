@@ -121,25 +121,60 @@ func (h *handlerOrder) CreateOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handlerOrder) UpdateOrder(w http.ResponseWriter, r *http.Request) {
-	//
+	w.Header().Set("Content-Type", "application/json")
+
+	request := new(orderdto.UpdateOrderRequest)
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	id, _ := strconv.Atoi(mux.Vars(r)["id"])
+	order, err := h.OrderRepository.GetOrder(int(id))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	if request.Qty != 0 {
+		order.Qty = request.Qty
+	}
+
+	data, err := h.OrderRepository.UpdateOrder(order)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		response := dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	response := dto.SuccessResult{Code: http.StatusOK, Data: convertResponseOrder(data)}
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *handlerOrder) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	id, _ := strconv.Atoi(mux.Vars(r)["id"])
-	cart, err := h.OrderRepository.GetOrder(id)
+	order, err := h.OrderRepository.GetOrder(id)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
 		json.NewEncoder(w).Encode(response)
+		return
 	}
 
-	data, err := h.OrderRepository.DeleteOrder(cart)
+	data, err := h.OrderRepository.DeleteOrder(order)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		response := dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()}
 		json.NewEncoder(w).Encode(response)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
