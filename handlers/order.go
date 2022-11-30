@@ -14,6 +14,8 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var path_file_order = "http://localhost:5000/uploads/"
+
 type handlerOrder struct {
 	OrderRepository repositories.OrderRepository
 }
@@ -25,14 +27,18 @@ func HandlerOrder(OrderRepository repositories.OrderRepository) *handlerOrder {
 func (h *handlerOrder) FindOrders(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	data, err := h.OrderRepository.FindOrders()
+	orders, err := h.OrderRepository.FindOrders()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err.Error())
 	}
 
+	for i, p := range orders {
+		orders[i].Product.Image = path_file_order + p.Product.Image
+	}
+
 	w.WriteHeader(http.StatusOK)
-	response := dto.SuccessResult{Code: http.StatusOK, Data: data}
+	response := dto.SuccessResult{Code: http.StatusOK, Data: orders}
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -74,6 +80,7 @@ func (h *handlerOrder) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(response)
 		return
 	}
+
 	//request product id
 	id, _ := strconv.Atoi(mux.Vars(r)["id"])
 	product, err := h.OrderRepository.ProductOrder(id)
@@ -95,6 +102,9 @@ func (h *handlerOrder) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//get transaction ID
+	transaction, _ := h.OrderRepository.GetTransactionID()
+
 	var totalTopping = 0
 	for _, i := range toppings {
 		totalTopping += i.Price
@@ -102,11 +112,13 @@ func (h *handlerOrder) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	var subTotal = request.Qty * (product.Price + totalTopping)
 
 	order := models.Order{
-		UserID:    userId,
-		Qty:       request.Qty,
-		ProductID: product.ID,
-		Topping:   toppings,
-		Subtotal:  subTotal,
+		TransactionID: int(transaction.ID),
+		UserID:        userId,
+		Qty:           request.Qty,
+		ProductID:     product.ID,
+		Topping:       toppings,
+		Subtotal:      subTotal,
+		Status:        "on",
 	}
 
 	orders, err := h.OrderRepository.CreateOrder(order)
@@ -189,6 +201,26 @@ func (h *handlerOrder) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	response := dto.SuccessResult{Code: http.StatusOK, Data: convertResponseOrder(data)}
+	json.NewEncoder(w).Encode(response)
+}
+
+func (h *handlerOrder) FindOrdersByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+
+	transaction, err := h.OrderRepository.GetIDTransaction()
+	data, err := h.OrderRepository.FindOrdersTransaction(int(transaction.ID))
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
+		json.NewEncoder(w).Encode(response)
+	}
+
+	for i, p := range data {
+		data[i].Product.Image = path_file_order + p.Product.Image
+	}
+
+	w.WriteHeader(http.StatusOK)
+	response := dto.SuccessResult{Code: http.StatusOK, Data: data}
 	json.NewEncoder(w).Encode(response)
 }
 

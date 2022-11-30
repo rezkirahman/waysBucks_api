@@ -20,3 +20,16 @@ type TransResponse struct {
 	Order   []string `json:"order"`
 	Total   int      `json:"total" gorm:"type : int"`
 }
+
+type CreateTransaction struct {
+	UserID int      `json:"user_id"`
+	Order  []string `json:"order"`
+	Total  int      `json:"total" gorm:"type : int"`
+}
+
+type UpdateTransaction struct {
+	UserID int    `json:"user_id" form:"user_id"`
+	Status string `json:"status"`
+	Total  int    `json:"total"`
+}
+

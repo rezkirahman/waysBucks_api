@@ -1,15 +1,17 @@
 package models
 
 type Order struct {
-	ID            int          `json:"id" gorm:"primary_key:auto_increment"`
-	UserID        int          `json:"user_id" gorm:"type:int"`
-	User          UserResponse `json:"user" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Qty           int          `json:"qty" gorm:"type:int"`
-	ProductID     int          `json:"-"`
-	Product       ProductOrder `json:"product" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Topping       []Topping    `json:"topping" gorm:"many2many:order_topping; constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	Subtotal      int          `json:"subtotal"`
-	TransactionID int          `json:"-" gorm:"type:int"`
+	ID            int           `json:"id" gorm:"primary_key:auto_increment"`
+	UserID        int           `json:"user_id" gorm:"type:int"`
+	User          UserResponse  `json:"user" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Qty           int           `json:"qty" gorm:"type:int"`
+	ProductID     int           `json:"-"`
+	Product       ProductOrder  `json:"product" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Topping       []Topping     `json:"topping" gorm:"many2many:order_topping; constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Status        string        `json:"status"`
+	Subtotal      int           `json:"subtotal"`
+	TransactionID int           `json:"-" gorm:"type:int"`
+	Transaction   TransResponse `jaon:"-"`
 }
 
 type TransactionOrder struct {
