@@ -25,14 +25,14 @@ func HandlerOrder(OrderRepository repositories.OrderRepository) *handlerOrder {
 func (h *handlerOrder) FindOrders(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	orders, err := h.OrderRepository.FindOrders()
+	data, err := h.OrderRepository.FindOrders()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(err.Error())
 	}
 
 	w.WriteHeader(http.StatusOK)
-	response := dto.SuccessResult{Code: http.StatusOK, Data: orders}
+	response := dto.SuccessResult{Code: http.StatusOK, Data: data}
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -49,7 +49,7 @@ func (h *handlerOrder) GetOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	response := dto.SuccessResult{Code: http.StatusOK, Data: convertResponseOrder(order)}
+	response := dto.SuccessResult{Code: http.StatusOK, Data: order}
 	json.NewEncoder(w).Encode(response)
 }
 
@@ -64,6 +64,7 @@ func (h *handlerOrder) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
 		json.NewEncoder(w).Encode(response)
+		return
 	}
 
 	validate := validator.New()
@@ -108,11 +109,20 @@ func (h *handlerOrder) CreateOrder(w http.ResponseWriter, r *http.Request) {
 		Subtotal:  subTotal,
 	}
 
-	data, err := h.OrderRepository.CreateOrder(order)
+	orders, err := h.OrderRepository.CreateOrder(order)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
 		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	data, err := h.OrderRepository.GetOrder(orders.ID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		response := dto.ErrorResult{Code: http.StatusBadRequest, Message: err.Error()}
+		json.NewEncoder(w).Encode(response)
+		return
 	}
 
 	w.WriteHeader(http.StatusOK)
@@ -178,16 +188,19 @@ func (h *handlerOrder) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
-	response := dto.SuccessResult{Code: http.StatusOK, Data: data}
+	response := dto.SuccessResult{Code: http.StatusOK, Data: convertResponseOrder(data)}
 	json.NewEncoder(w).Encode(response)
 }
 
 func convertResponseOrder(u models.Order) models.Order {
 	return models.Order{
-		ID:       u.ID,
-		Qty:      u.Qty,
-		Subtotal: u.Subtotal,
-		Product:  u.Product,
-		Topping:  u.Topping,
+		ID:        u.ID,
+		UserID:    u.UserID,
+		User:      u.User,
+		Qty:       u.Qty,
+		Subtotal:  u.Subtotal,
+		ProductID: u.ProductID,
+		Product:   u.Product,
+		Topping:   u.Topping,
 	}
 }

@@ -7,12 +7,12 @@ type User struct {
 	Password    string      `json:"-" gorm:"type: varchar(255)"`
 }
 
-type UserTransaction struct {
+type UserResponse struct {
 	ID    int    `json:"id"`
 	Name  string `json:"name"`
 	Email string `json:"email"`
 }
 
-func (UserTransaction) TableName() string {
+func (UserResponse) TableName() string {
 	return "users"
 }

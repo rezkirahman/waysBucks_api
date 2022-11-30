@@ -1,14 +1,14 @@
 package models
 
 type Transaction struct {
-	ID      int     `json:"id" gorm:"primary_key:auto_increment"`
-	Name    string  `json:"name" form:"name" gorm:"type:varchar(255)"`
-	Email   string  `json:"email" form:"email" gorm:"type:varchar(255)"`
-	Phone   string  `json:"phone" form:"phone" gorm:"type:varchar(255)"`
-	Poscode string  `json:"poscode" form:"poscode" gorm:"type:varchar(255)"`
-	Address string  `json:"address" form:"address" gorm:"type:varchar(255)"`
-	Status  string  `json:"status" gorm:"type:varchar(25)"`
-	OrderID []int   `json:"-" form:"order_id"`
-	Order   []Order `json:"order"`
-	Total   int     `json:"total"`
+	ID      int64        `json:"id" gorm:"primary_key:auto_increment"`
+	UserID  int          `json:"user_id" gorm:"type:int"`
+	User    UserResponse `json:"user" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Status  string       `json:"status" gorm:"type:varchar(25)"`
+	OrderID int          `json:"order_id" gorm:"type:int"`
+	Order   []Order      `json:"topping" gorm:"many2many:transaction_order; constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	Total   int          `json:"total" gorm:"type:int"`
+	// Phone   string             `json:"phone" form:"phone" gorm:"type:varchar(255)"`
+	// Poscode string             `json:"poscode" form:"poscode" gorm:"type:varchar(255)"`
+	// Address string             `json:"address" form:"address" gorm:"type:varchar(255)"`
 }

@@ -47,7 +47,7 @@ func (r *repository) UpdateOrder(order models.Order) (models.Order, error) {
 }
 
 func (r *repository) DeleteOrder(order models.Order) (models.Order, error) {
-	err := r.db.Delete(&order).Error
+	err := r.db.Preload("User").Preload("Product").Preload("Topping").Delete(&order).Error
 
 	return order, err
 }
