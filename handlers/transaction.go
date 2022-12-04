@@ -49,7 +49,7 @@ func (h *handlerTransaction) FindTransactions(w http.ResponseWriter, r *http.Req
 		json.NewEncoder(w).Encode(response)
 	}
 
-	w.WriteHeader(http.StatusOK)
+	//w.WriteHeader(http.StatusOK)
 	response := dto.SuccessResult{Code: http.StatusOK, Data: transactions}
 	json.NewEncoder(w).Encode(response)
 }
@@ -113,6 +113,9 @@ func (h *handlerTransaction) CreateTransaction(w http.ResponseWriter, r *http.Re
 		ID:     idTrans,
 		UserID: id,
 		Status: "waiting",
+		Postcode: request.Postcode,
+		Phone: request.Phone,
+		Address: request.Address,
 	}
 
 	transaction, _ := h.TransactionRepository.GetTransaction()
@@ -154,6 +157,18 @@ func (h *handlerTransaction) UpdateTransaction(w http.ResponseWriter, r *http.Re
 
 	if request.Status != "waiting" {
 		transaction.Status = request.Status
+	}
+
+	if request.Postcode != ""{
+		transaction.Postcode = request.Postcode
+	}
+
+	if request.Address != ""{
+		transaction.Address = request.Address
+	}
+
+	if request.Phone != ""{
+		transaction.Phone = request.Phone
 	}
 
 	// 1. Initiate Snap client
@@ -229,6 +244,8 @@ func (h *handlerTransaction) GetUserTransaction(w http.ResponseWriter, r *http.R
 	json.NewEncoder(w).Encode(response)
 }
 
+
+// notif
 func (h *handlerTransaction) Notification(w http.ResponseWriter, r *http.Request) {
 	var notificationPayload map[string]interface{}
 
@@ -276,7 +293,7 @@ func (h *handlerTransaction) Notification(w http.ResponseWriter, r *http.Request
 	w.WriteHeader(http.StatusOK)
 }
 
-// notif
+
 func SendMail(status string, transaction models.Transaction) {
 
 	if status != transaction.Status && (status == "success") {

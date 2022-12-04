@@ -22,14 +22,19 @@ type TransResponse struct {
 }
 
 type CreateTransaction struct {
-	UserID int      `json:"user_id"`
-	Order  []string `json:"order"`
-	Total  int      `json:"total" gorm:"type : int"`
+	UserID   int      `json:"user_id"`
+	Order    []string `json:"order"`
+	Total    int      `json:"total"`
+	Phone    string   `json:"phone"`
+	Postcode string   `json:"postcode"`
+	Address  string   `json:"address"`
 }
 
 type UpdateTransaction struct {
-	UserID int    `json:"user_id" form:"user_id"`
-	Status string `json:"status"`
-	Total  int    `json:"total"`
+	UserID   int    `json:"user_id" form:"user_id"`
+	Status   string `json:"status"`
+	Total    int    `json:"total"`
+	Phone    string `json:"phone"`
+	Postcode string `json:"postcode"`
+	Address  string `json:"address"`
 }
-

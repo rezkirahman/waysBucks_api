@@ -16,16 +16,17 @@ type TransactionRepository interface {
 	UpdateTransactions(status string, ID string) error
 	GetOneTransaction(ID string) (models.Transaction, error) // Declare GetOneTransaction repository method ...
 	GetDetailTransaction(ID int) (models.Transaction, error)
+	GetTransID(ID int) (models.Transaction, error)
 }
 
 func RepositoryTransaction(db *gorm.DB) *repository {
 	return &repository{db}
 }
-func (r *repository) FindTransactions() ([]models.Transaction, error) {
-	var transactions []models.Transaction
-	err := r.db.Preload("User").Preload("User.Profile").Preload("Orders").Preload("Orders.Product").Preload("Orders.Topping").Find(&transactions).Error
 
-	return transactions, err
+func (r *repository) FindTransactions() ([]models.Transaction, error) {
+	var transaction []models.Transaction
+	err := r.db.Preload("User").Preload("Order").Preload("Order.Product").Preload("Order.Topping").Not("status = ?", "waiting").Find(&transaction).Error
+	return transaction, err
 }
 
 func (r *repository) GetDetailTransaction(ID int) (models.Transaction, error) {
@@ -37,7 +38,7 @@ func (r *repository) GetDetailTransaction(ID int) (models.Transaction, error) {
 
 func (r *repository) GetTransaction() (models.Transaction, error) {
 	var transaction models.Transaction
-	err := r.db.Preload("User").Preload("Orders").Preload("Orders.Product").Preload("Orders.Topping").Find(&transaction, "status = ?", "waiting").Error
+	err := r.db.Preload("User").Preload("Order").Preload("Order.Product").Preload("Order.Topping").Find(&transaction, "status = ?", "waiting").Error
 
 	return transaction, err
 }
@@ -62,12 +63,11 @@ func (r *repository) DeleteTransaction(transaction models.Transaction) (models.T
 
 func (r *repository) GetUserTransaction(UserID int) ([]models.Transaction, error) {
 	var user []models.Transaction
-	err := r.db.Preload("User").Preload("Orders").Preload("Orders.Product").Preload("Orders.Topping").Find(&user, "user_id  = ?", UserID).Error
+	err := r.db.Debug().Preload("User").Preload("Order").Preload("Order.Product").Preload("Order.Topping").Find(&user, "user_id  = ?", UserID).Error
 
 	return user, err
 }
 
-//
 func (r *repository) UpdateTransactions(status string, ID string) error {
 	var transaction models.Transaction
 	r.db.Preload("Product").First(&transaction, ID)
@@ -85,10 +85,16 @@ func (r *repository) UpdateTransactions(status string, ID string) error {
 	return err
 }
 
-// GetOneTransaction method here ...
+// GetOneTransaction
 func (r *repository) GetOneTransaction(ID string) (models.Transaction, error) {
 	var transaction models.Transaction
 	err := r.db.Preload("Orders").Preload("Orders.Product").Preload("Orders.Topping").Preload("User").First(&transaction, "id = ?", ID).Error
 
+	return transaction, err
+}
+
+func (r *repository) GetTransID(ID int) (models.Transaction, error) {
+	var transaction models.Transaction
+	err := r.db.Preload("User").Preload("Order").Preload("Order.Product").Preload("Order.Topping").Find(&transaction, "status = ? AND user_id = ?", "waiting", ID).Error
 	return transaction, err
 }

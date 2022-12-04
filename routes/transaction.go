@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func Transaction(r *mux.Router) {
+func TransactionRoutes(r *mux.Router) {
 	transactionRepository := repositories.RepositoryTransaction(mysql.DB)
 	h := handlers.HandlerTransaction(transactionRepository)
 

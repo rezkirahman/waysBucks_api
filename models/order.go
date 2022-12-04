@@ -10,8 +10,8 @@ type Order struct {
 	Topping       []Topping     `json:"topping" gorm:"many2many:order_topping; constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
 	Status        string        `json:"status"`
 	Subtotal      int           `json:"subtotal"`
-	TransactionID int           `json:"-" gorm:"type:int"`
-	Transaction   TransResponse `jaon:"-"`
+	TransactionID int           `json:"transaction_id"`
+	Transaction   TransResponse `json:"transaction"`
 }
 
 type TransactionOrder struct {
@@ -22,7 +22,7 @@ type TransactionOrder struct {
 	Product   ProductOrder   `json:"product"`
 	Topping   []ToppingOrder `json:"toppings"`
 	Qty       int            `json:"qty"`
-	Subtotal  int            `json:"subtotal"`
+	Subtotal  int            `json:"subtotal" `
 }
 
 func (TransactionOrder) TableName() string {

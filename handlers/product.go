@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"encoding/json"
 	"net/http"
 	"os"
@@ -10,11 +11,14 @@ import (
 	"waysbucks/models"
 	"waysbucks/repositories"
 
+	"context"
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
+
 	"github.com/go-playground/validator/v10"
 	//"github.com/golang-jwt/jwt/v4"
 	"github.com/gorilla/mux"
 )
-
 
 type handlerProduct struct {
 	ProductRepository repositories.ProductRepository
@@ -74,7 +78,22 @@ func (h *handlerProduct) CreateProduct(w http.ResponseWriter, r *http.Request) {
 
 	// Get dataFile from midleware and store to filename variable here ...
 	dataContex := r.Context().Value("dataFile") // add this code
-	filename := dataContex.(string)             // add this code
+	filepath := dataContex.(string)             // add this code
+
+	var ctx = context.Background()
+	var CLOUD_NAME = os.Getenv("CLOUD_NAME")
+	var API_KEY = os.Getenv("API_KEY")
+	var API_SECRET = os.Getenv("API_SECRET")
+
+	// Add your Cloudinary credentials ...
+	cld, _ := cloudinary.NewFromParams(CLOUD_NAME, API_KEY, API_SECRET)
+
+	// Upload file to Cloudinary ...
+	resp, err := cld.Upload.Upload(ctx, filepath, uploader.UploadParams{Folder: "waysbucks"})
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 
 	price, _ := strconv.Atoi(r.FormValue("price"))
 	qty, _ := strconv.Atoi(r.FormValue("qty"))
@@ -85,8 +104,7 @@ func (h *handlerProduct) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	validation := validator.New()
-	err := validation.Struct(request)
-	if err != nil {
+	if err := validation.Struct(request); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		response := dto.ErrorResult{Code: http.StatusInternalServerError, Message: err.Error()}
 		json.NewEncoder(w).Encode(response)
@@ -94,11 +112,10 @@ func (h *handlerProduct) CreateProduct(w http.ResponseWriter, r *http.Request) {
 	}
 
 	product := models.Product{
-		Name:   request.Name,
-		Price:  request.Price,
-		Image:  filename,
-		Qty:    request.Qty,
-		//UserID: userId,
+		Name:  request.Name,
+		Price: request.Price,
+		Image: resp.SecureURL,
+		Qty:   request.Qty,
 	}
 
 	product, err = h.ProductRepository.CreateProduct(product)

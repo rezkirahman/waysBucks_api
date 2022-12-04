@@ -103,13 +103,15 @@ func (h *handlerOrder) CreateOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//get transaction ID
-	transaction, _ := h.OrderRepository.GetTransactionID()
+	transaction,_ := h.OrderRepository.GetTransactionID(userId)
 
-	var totalTopping = 0
+	 var priceTopping = 0
 	for _, i := range toppings {
-		totalTopping += i.Price
+		priceTopping += i.Price
 	}
-	var subTotal = request.Qty * (product.Price + totalTopping)
+
+	var subTotal = request.Qty * (product.Price + priceTopping)
+
 
 	order := models.Order{
 		TransactionID: int(transaction.ID),
@@ -207,7 +209,7 @@ func (h *handlerOrder) DeleteOrder(w http.ResponseWriter, r *http.Request) {
 func (h *handlerOrder) FindOrdersByID(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
-	transaction, err := h.OrderRepository.GetIDTransaction()
+	transaction, _ := h.OrderRepository.GetIDTransaction()
 	data, err := h.OrderRepository.FindOrdersTransaction(int(transaction.ID))
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

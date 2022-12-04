@@ -16,8 +16,8 @@ type UpdateProductRequest struct {
 
 type ProductResponse struct {
 	ID    int    `json:"id"`
-	Name  string `json:"title" form:"title"`
-	Price int    `json:"price" form:"price"`
-	Image string `json:"image" form:"image"`
+	Name  string `json:"name"`
+	Price int    `json:"price"`
+	Image string `json:"image"`
 	Qty   int    `json:"qty"`
 }

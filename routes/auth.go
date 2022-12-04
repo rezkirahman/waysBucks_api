@@ -1,11 +1,12 @@
 package routes
 
 import (
-  "waysbucks/handlers"
-  "waysbucks/pkg/mysql"
-  "waysbucks/repositories"
+	"waysbucks/handlers"
+	"waysbucks/pkg/middleware"
+	"waysbucks/pkg/mysql"
+	"waysbucks/repositories"
 
-  "github.com/gorilla/mux"
+	"github.com/gorilla/mux"
 )
 
 func AuthRoutes(r *mux.Router) {
@@ -14,4 +15,5 @@ func AuthRoutes(r *mux.Router) {
 
   r.HandleFunc("/register", h.Register).Methods("POST")
   r.HandleFunc("/login", h.Login).Methods("POST")
+  r.HandleFunc("/check-auth", middleware.Auth(h.CheckAuth)).Methods("GET")
 }
